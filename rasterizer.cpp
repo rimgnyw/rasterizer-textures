@@ -12,6 +12,9 @@ using glm::mat3;
 using glm::vec2;
 using glm::vec3;
 
+// ----------------------------------------------------------------------------
+// STRUCTURES
+
 struct Pixel {
     int x;
     int y;
@@ -21,6 +24,12 @@ struct Pixel {
 
 struct Vertex {
     vec3 position;
+};
+
+struct Texture {
+    int width;
+    int height;
+    unsigned char *data;
 };
 
 // ----------------------------------------------------------------------------
@@ -66,7 +75,13 @@ void PixelShader(const Pixel &p);
 void DrawPolygon(const vector<Vertex> &vertices);
 void VertexShader(const Vertex &v, Pixel &p);
 
+void LoadImage(const char *filename, Texture &texture);
+void FreeImage(unsigned char *data);
+int GetImageBufferIndex(int x, int y, int width);
+vec3 GetImageColor(const Texture &texture, int x, int y);
+
 int main(int argc, char *argv[]) {
+
     LoadTestModel(triangles); // Load model
     sdlAux = new SDL2Aux(SCREEN_WIDTH, SCREEN_HEIGHT);
     t = SDL_GetTicks(); // Set start value for timer.
@@ -125,6 +140,19 @@ void Draw() {
     for (int y = 0; y < SCREEN_HEIGHT; ++y)
         for (int x = 0; x < SCREEN_WIDTH; ++x)
             depthBuffer[y][x] = 0;
+
+    Texture texture;
+    LoadImage("../test.png", texture);
+    for (int i = 0; i < texture.width; i++) {
+        for (int j = 0; j < texture.height; j++) {
+            int index = GetImageBufferIndex(i, j, texture.width);
+            unsigned char r = texture.data[index];
+            unsigned char g = texture.data[index + 1];
+            unsigned char b = texture.data[index + 2];
+            sdlAux->putPixel(i, j, vec3(r / 255.f, g / 255.f, b / 255.f));
+        }
+    }
+    FreeImage(texture.data);
 
     for (size_t i = 0; i < triangles.size(); ++i) {
         vector<Vertex> vertices(3);
@@ -283,3 +311,37 @@ void PixelShader(const Pixel &p) {
         sdlAux->putPixel(x, y, illumnination);
     }
 }
+
+void LoadImage(const char *filename, Texture &texture) {
+    texture.data = stbi_load(filename, &texture.width, &texture.height, NULL, 3);
+    if (texture.data == NULL) {
+        cerr << "Error loading texture file " << filename << endl;
+        exit(1);
+    }
+}
+
+void FreeImage(unsigned char *data) { stbi_image_free(data); }
+
+int GetImageBufferIndex(int x, int y, int width) { return (y * width + x) * 3; }
+
+vec3 GetImageColor(const Texture &texture, int x, int y) {
+    int index = GetImageBufferIndex(x, y, texture.width);
+    unsigned char r = texture.data[index];
+    unsigned char g = texture.data[index + 1];
+    unsigned char b = texture.data[index + 2];
+    return vec3(r / 255.f, g / 255.f, b / 255.f);
+}
+// int width, height, channels;
+
+// unsigned char *img = stbi_load("test.png", &width, &height, &channels, 0);
+
+// if (img == NULL) {
+//     printf("Failed to load image\n");
+//     return 1;
+// }
+
+// printf("Loaded image!\n");
+// printf("Width: %d, Height: %d, Channels: %d\n", width, height, channels);
+
+// stbi_image_free(img);
+// return 0;
