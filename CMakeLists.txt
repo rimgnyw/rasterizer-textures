@@ -20,11 +20,11 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/SDL2Auxiliary
 )
 
-add_executable(DH2323SkeletonSDL2
-  skeletonSDL2.cpp
+add_executable(rasterizer
+  rasterizer.cpp
   ${CMAKE_SOURCE_DIR}/SDL2Auxiliary/SDL2Auxiliary.cpp
 )
 
-target_link_libraries(DH2323SkeletonSDL2
+target_link_libraries(rasterizer
   ${SDL2_LIBRARIES}
 )

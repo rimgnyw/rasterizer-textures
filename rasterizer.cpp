@@ -1,9 +1,10 @@
-// DH2323 skeleton code, Lab3 (SDL2 version)
 #include <iostream>
 #include <glm/glm.hpp>
 #include "SDL2Auxiliary.h"
 #include "TestModel.h"
-#include <algorithm> //for max()
+#include <algorithm>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 using namespace std;
 using glm::ivec2;
