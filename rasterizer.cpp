@@ -20,10 +20,12 @@ struct Pixel {
     int y;
     float zinv;
     vec3 pos3d;
+    vec2 uv;
 };
 
 struct Vertex {
     vec3 position;
+    vec2 uv;
 };
 
 struct Texture {
@@ -57,6 +59,8 @@ vec3 indirectLightPowerPerArea = 0.5f * vec3(1, 1, 1);
 vec3 currentNormal;
 vec3 currentReflectance;
 
+Texture currentTexture;
+
 // ----------------------------------------------------------------------------
 // FUNCTIONS
 
@@ -78,11 +82,22 @@ void VertexShader(const Vertex &v, Pixel &p);
 void LoadImage(const char *filename, Texture &texture);
 void FreeImage(unsigned char *data);
 int GetImageBufferIndex(int x, int y, int width);
-vec3 GetImageColor(const Texture &texture, int x, int y);
+vec3 GetImageColor(const Texture &texture, int index);
+int GetImageBufferIndexFromUV(float u, float v, int width, int height);
 
 int main(int argc, char *argv[]) {
 
-    LoadTestModel(triangles); // Load model
+    LoadImage("../test.jpg", currentTexture);
+
+    // LoadTestModel(triangles); // Load model
+
+    // Triangle 1
+    triangles.push_back(Triangle(vec3(-1, -1, 0), vec3(1, -1, 0), vec3(-1, 1, 0), vec2(0, 0),
+                                 vec2(1, 0), vec2(0, 1), vec3(1, 1, 1)));
+
+    // Triangle 2
+    triangles.push_back(Triangle(vec3(1, -1, 0), vec3(1, 1, 0), vec3(-1, 1, 0), vec2(1, 0),
+                                 vec2(1, 1), vec2(0, 1), vec3(1, 1, 1)));
     sdlAux = new SDL2Aux(SCREEN_WIDTH, SCREEN_HEIGHT);
     t = SDL_GetTicks(); // Set start value for timer.
 
@@ -142,7 +157,7 @@ void Draw() {
             depthBuffer[y][x] = 0;
 
     Texture texture;
-    LoadImage("../test.png", texture);
+    LoadImage("../test.jpg", texture);
     for (int i = 0; i < texture.width; i++) {
         for (int j = 0; j < texture.height; j++) {
             int index = GetImageBufferIndex(i, j, texture.width);
@@ -162,6 +177,10 @@ void Draw() {
         vertices[1].position = triangles[i].v1;
         vertices[2].position = triangles[i].v2;
 
+        vertices[0].uv = triangles[i].uv0;
+        vertices[1].uv = triangles[i].uv1;
+        vertices[2].uv = triangles[i].uv2;
+
         currentNormal = triangles[i].normal;
         currentReflectance = triangles[i].color;
 
@@ -180,6 +199,7 @@ void VertexShader(const Vertex &v, Pixel &p) {
     p.zinv = 1 / rotatedPosition.z;
 
     p.pos3d = v.position * p.zinv;
+    p.uv = v.uv;
 }
 
 void Interpolate(Pixel a, Pixel b, vector<Pixel> &result) {
@@ -189,14 +209,16 @@ void Interpolate(Pixel a, Pixel b, vector<Pixel> &result) {
     float step_y = (b.y - a.y) / float(max(N - 1, 1));
     float step_zinv = (b.zinv - a.zinv) / float(max(N - 1, 1));
     vec3 step_pos3d = (b.pos3d - a.pos3d) / float(max(N - 1, 1));
+    vec2 step_uv = (b.uv - a.uv) / float(max(N - 1, 1));
 
     for (int i = 0; i < N; i++) {
         float current_x = a.x + i * step_x;
         float current_y = a.y + i * step_y;
         float current_zinv = a.zinv + i * step_zinv;
         vec3 current_pos3d = a.pos3d + float(i) * step_pos3d;
+        vec2 current_uv = a.uv + float(i) * step_uv;
 
-        Pixel p = {current_x, current_y, current_zinv, current_pos3d};
+        Pixel p = {current_x, current_y, current_zinv, current_pos3d, current_uv};
         result[i] = p;
     }
 }
@@ -304,7 +326,12 @@ void PixelShader(const Pixel &p) {
 
     vec3 D = lightPower * max(0.f, glm::dot(n_hat, r_hat)) / area;
 
-    vec3 illumnination = currentReflectance * (D + indirectLightPowerPerArea);
+    // vec3 illumnination = currentReflectance * (D + indirectLightPowerPerArea);
+    vec3 illumnination =
+        GetImageColor(currentTexture,
+                      GetImageBufferIndexFromUV(p.uv.x, p.uv.y, currentTexture.width,
+                                                currentTexture.height)) *
+        (D + indirectLightPowerPerArea);
 
     if (p.zinv > depthBuffer[y][x]) {
         depthBuffer[y][x] = p.zinv;
@@ -324,8 +351,14 @@ void FreeImage(unsigned char *data) { stbi_image_free(data); }
 
 int GetImageBufferIndex(int x, int y, int width) { return (y * width + x) * 3; }
 
-vec3 GetImageColor(const Texture &texture, int x, int y) {
-    int index = GetImageBufferIndex(x, y, texture.width);
+int GetImageBufferIndexFromUV(float u, float v, int width, int height) {
+    int x = u * (width - 1);
+    int y = v * (height - 1);
+
+    return (y * width + x) * 3;
+}
+
+vec3 GetImageColor(const Texture &texture, int index) {
     unsigned char r = texture.data[index];
     unsigned char g = texture.data[index + 1];
     unsigned char b = texture.data[index + 2];
