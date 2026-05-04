@@ -9,6 +9,12 @@ IF(APPLE)
   SET(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Build architectures for Mac OS X" FORCE)
 ENDIF(APPLE)
 
+configure_file(
+    ${CMAKE_SOURCE_DIR}/checkerboard.png
+    ${CMAKE_BINARY_DIR}/checkerboard.png
+    COPYONLY
+)
+
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 find_package (SDL2 REQUIRED)
 
