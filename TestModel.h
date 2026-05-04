@@ -23,12 +23,28 @@ class Triangle {
         : v0(v0), v1(v1), v2(v2), uv0(uv0), uv1(uv1), uv2(uv2), color(color) {
         ComputeNormal();
     }
+    // Triangle(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 color)
+    //     : v0(v0), v1(v1), v2(v2), color(color) {
+    //     ComputeNormal();
+    // }
 
     void ComputeNormal() {
         glm::vec3 e1 = v1 - v0;
         glm::vec3 e2 = v2 - v0;
         normal = glm::normalize(glm::cross(e2, e1));
     }
+};
+// Helper for adding a square (two triangles) to the model
+void AddSquare(glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 D, glm::vec3 color,
+               std::vector<Triangle> &triangles) {
+    glm::vec2 uvB(0, 1);
+    glm::vec2 uvA(1, 1);
+    glm::vec2 uvD(0, 0);
+    glm::vec2 uvC(1, 0);
+
+    triangles.emplace_back(A, B, C, uvA, uvB, uvC, color);
+
+    triangles.emplace_back(B, D, C, uvB, uvD, uvC, color);
 };
 
 // Loads the Cornell Box. It is scaled to fill the volume:
@@ -48,7 +64,6 @@ void LoadTestModel(std::vector<Triangle> &triangles) {
     vec3 white(0.75f, 0.75f, 0.75f);
 
     triangles.clear();
-    triangles.reserve(5 * 2 * 3);
 
     // ---------------------------------------------------------------------------
     // Room
@@ -65,99 +80,20 @@ void LoadTestModel(std::vector<Triangle> &triangles) {
     vec3 G(L, L, L);
     vec3 H(0, L, L);
 
-    // Floor:
-    triangles.push_back(
-        Triangle(C, B, A, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), green));
-    triangles.push_back(
-        Triangle(C, D, B, glm::vec2(0, 0), glm::vec2(0, 1), glm::vec2(1, 1), green));
+    // Floor (y = 0)
+    AddSquare(B, A, D, C, green, triangles);
 
-    // Left wall
-    triangles.push_back(
-        Triangle(A, E, C, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), purple));
-    triangles.push_back(
-        Triangle(C, E, G, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), purple));
+    // Ceiling (y = L)
+    AddSquare(F, E, H, G, cyan, triangles);
 
-    // Right wall
-    triangles.push_back(
-        Triangle(F, B, D, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), yellow));
-    triangles.push_back(
-        Triangle(H, F, D, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), yellow));
+    // Back wall (z = L)
+    AddSquare(D, C, H, G, white, triangles);
 
-    // Ceiling
-    triangles.push_back(Triangle(E, F, G, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), cyan));
-    triangles.push_back(Triangle(F, H, G, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), cyan));
+    // Left wall (x = 0)
+    AddSquare(B, D, F, H, purple, triangles);
 
-    // Back wall
-    triangles.push_back(
-        Triangle(G, D, C, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), white));
-    triangles.push_back(
-        Triangle(G, H, D, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), white));
-
-    // ---------------------------------------------------------------------------
-    // Short block
-
-    A = vec3(290, 0, 114);
-    B = vec3(130, 0, 65);
-    C = vec3(240, 0, 272);
-    D = vec3(82, 0, 225);
-
-    E = vec3(290, 165, 114);
-    F = vec3(130, 165, 65);
-    G = vec3(240, 165, 272);
-    H = vec3(82, 165, 225);
-
-    // Front
-    triangles.push_back(Triangle(E, B, A, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), red));
-    triangles.push_back(Triangle(E, F, B, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), red));
-
-    // Front
-    triangles.push_back(Triangle(F, D, B, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), red));
-    triangles.push_back(Triangle(F, H, D, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), red));
-
-    // BACK
-    triangles.push_back(Triangle(H, C, D, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), red));
-    triangles.push_back(Triangle(H, G, C, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), red));
-
-    // LEFT
-    triangles.push_back(Triangle(G, E, C, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), red));
-    triangles.push_back(Triangle(E, A, C, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), red));
-
-    // TOP
-    triangles.push_back(Triangle(G, F, E, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), red));
-    triangles.push_back(Triangle(G, H, F, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), red));
-
-    // ---------------------------------------------------------------------------
-    // Tall block
-
-    A = vec3(423, 0, 247);
-    B = vec3(265, 0, 296);
-    C = vec3(472, 0, 406);
-    D = vec3(314, 0, 456);
-
-    E = vec3(423, 330, 247);
-    F = vec3(265, 330, 296);
-    G = vec3(472, 330, 406);
-    H = vec3(314, 330, 456);
-
-    // Front
-    triangles.push_back(Triangle(E, B, A, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), blue));
-    triangles.push_back(Triangle(E, F, B, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), blue));
-
-    // Front
-    triangles.push_back(Triangle(F, D, B, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), blue));
-    triangles.push_back(Triangle(F, H, D, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), blue));
-
-    // BACK
-    triangles.push_back(Triangle(H, C, D, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), blue));
-    triangles.push_back(Triangle(H, G, C, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), blue));
-
-    // LEFT
-    triangles.push_back(Triangle(G, E, C, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), blue));
-    triangles.push_back(Triangle(E, A, C, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), blue));
-
-    // TOP
-    triangles.push_back(Triangle(G, F, E, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), blue));
-    triangles.push_back(Triangle(G, H, F, glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), blue));
+    // Right wall (x = L)
+    AddSquare(A, C, E, G, yellow, triangles);
 
     // ----------------------------------------------
     // Scale to the volume [-1,1]^3

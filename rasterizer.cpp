@@ -60,6 +60,7 @@ vec3 currentNormal;
 vec3 currentReflectance;
 
 Texture currentTexture;
+// mat3 mappingCoefficents(1.f);
 
 // ----------------------------------------------------------------------------
 // FUNCTIONS
@@ -87,17 +88,10 @@ int GetImageBufferIndexFromUV(float u, float v, int width, int height);
 
 int main(int argc, char *argv[]) {
 
-    LoadImage("../test.jpg", currentTexture);
+    LoadImage("checkerboard.png", currentTexture);
 
-    // LoadTestModel(triangles); // Load model
+    LoadTestModel(triangles); // Load model
 
-    // Triangle 1
-    triangles.push_back(Triangle(vec3(-1, -1, 0), vec3(1, -1, 0), vec3(-1, 1, 0), vec2(0, 0),
-                                 vec2(1, 0), vec2(0, 1), vec3(1, 1, 1)));
-
-    // Triangle 2
-    triangles.push_back(Triangle(vec3(1, -1, 0), vec3(1, 1, 0), vec3(-1, 1, 0), vec2(1, 0),
-                                 vec2(1, 1), vec2(0, 1), vec3(1, 1, 1)));
     sdlAux = new SDL2Aux(SCREEN_WIDTH, SCREEN_HEIGHT);
     t = SDL_GetTicks(); // Set start value for timer.
 
@@ -105,6 +99,7 @@ int main(int argc, char *argv[]) {
         Update();
         Draw();
     }
+    FreeImage(currentTexture.data);
     sdlAux->saveBMP("screenshot.bmp");
     return 0;
 }
@@ -156,19 +151,6 @@ void Draw() {
         for (int x = 0; x < SCREEN_WIDTH; ++x)
             depthBuffer[y][x] = 0;
 
-    Texture texture;
-    LoadImage("../test.jpg", texture);
-    for (int i = 0; i < texture.width; i++) {
-        for (int j = 0; j < texture.height; j++) {
-            int index = GetImageBufferIndex(i, j, texture.width);
-            unsigned char r = texture.data[index];
-            unsigned char g = texture.data[index + 1];
-            unsigned char b = texture.data[index + 2];
-            sdlAux->putPixel(i, j, vec3(r / 255.f, g / 255.f, b / 255.f));
-        }
-    }
-    FreeImage(texture.data);
-
     for (size_t i = 0; i < triangles.size(); ++i) {
         vector<Vertex> vertices(3);
 
@@ -199,7 +181,7 @@ void VertexShader(const Vertex &v, Pixel &p) {
     p.zinv = 1 / rotatedPosition.z;
 
     p.pos3d = v.position * p.zinv;
-    p.uv = v.uv;
+    p.uv = v.uv * p.zinv;
 }
 
 void Interpolate(Pixel a, Pixel b, vector<Pixel> &result) {
@@ -293,6 +275,7 @@ void DrawPolygonRows(const vector<Pixel> &leftPixels, const vector<Pixel> &right
                 continue;
 
             p.pos3d /= p.zinv;
+            p.uv /= p.zinv;
             PixelShader(p);
         }
     }
@@ -326,11 +309,11 @@ void PixelShader(const Pixel &p) {
 
     vec3 D = lightPower * max(0.f, glm::dot(n_hat, r_hat)) / area;
 
-    // vec3 illumnination = currentReflectance * (D + indirectLightPowerPerArea);
+    vec2 uv = p.uv;
+
     vec3 illumnination =
-        GetImageColor(currentTexture,
-                      GetImageBufferIndexFromUV(p.uv.x, p.uv.y, currentTexture.width,
-                                                currentTexture.height)) *
+        GetImageColor(currentTexture, GetImageBufferIndexFromUV(uv.x, uv.y, currentTexture.width,
+                                                                currentTexture.height)) *
         (D + indirectLightPowerPerArea);
 
     if (p.zinv > depthBuffer[y][x]) {
@@ -364,17 +347,3 @@ vec3 GetImageColor(const Texture &texture, int index) {
     unsigned char b = texture.data[index + 2];
     return vec3(r / 255.f, g / 255.f, b / 255.f);
 }
-// int width, height, channels;
-
-// unsigned char *img = stbi_load("test.png", &width, &height, &channels, 0);
-
-// if (img == NULL) {
-//     printf("Failed to load image\n");
-//     return 1;
-// }
-
-// printf("Loaded image!\n");
-// printf("Width: %d, Height: %d, Channels: %d\n", width, height, channels);
-
-// stbi_image_free(img);
-// return 0;
