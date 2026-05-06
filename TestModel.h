@@ -43,7 +43,6 @@ void AddSquare(glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 D, glm::vec3 col
     glm::vec2 uvC(1, 0);
 
     triangles.emplace_back(A, B, C, uvA, uvB, uvC, color);
-
     triangles.emplace_back(B, D, C, uvB, uvD, uvC, color);
 };
 
@@ -80,20 +79,48 @@ void LoadTestModel(std::vector<Triangle> &triangles) {
     vec3 G(L, L, L);
     vec3 H(0, L, L);
 
-    // Floor (y = 0)
-    AddSquare(B, A, D, C, green, triangles);
+    // Floor
+    AddSquare(C, D, A, B, green, triangles);
 
-    // Ceiling (y = L)
-    AddSquare(F, E, H, G, cyan, triangles);
+    // Ceiling
+    AddSquare(E, F, G, H, cyan, triangles);
 
-    // Back wall (z = L)
+    // Back wall
     AddSquare(D, C, H, G, white, triangles);
 
-    // Left wall (x = 0)
+    // Left wall
     AddSquare(B, D, F, H, purple, triangles);
 
-    // Right wall (x = L)
-    AddSquare(A, C, E, G, yellow, triangles);
+    // Right wall
+    AddSquare(C, A, G, E, yellow, triangles);
+
+    // ---------------------------------------------------------------------------
+    // Short block
+
+    A = vec3(290, 0, 114);
+    B = vec3(130, 0, 65);
+    C = vec3(240, 0, 272);
+    D = vec3(82, 0, 225);
+
+    E = vec3(290, 165, 114);
+    F = vec3(130, 165, 65);
+    G = vec3(240, 165, 272);
+    H = vec3(82, 165, 225);
+
+    // Front
+    AddSquare(A, B, E, F, red, triangles);
+
+    // Front
+    AddSquare(B, D, F, H, red, triangles);
+
+    // BACK
+    AddSquare(D, C, H, G, red, triangles);
+
+    // LEFT
+    AddSquare(C, A, G, E, red, triangles);
+
+    // TOP
+    AddSquare(F, E, H, G, red, triangles);
 
     // ----------------------------------------------
     // Scale to the volume [-1,1]^3
