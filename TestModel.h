@@ -18,11 +18,19 @@ class Triangle {
     glm::vec3 normal;
     glm::vec3 color;
 
+    std::string texturePath;
+
     Triangle(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec2 uv0, glm::vec2 uv1, glm::vec2 uv2,
              glm::vec3 color)
         : v0(v0), v1(v1), v2(v2), uv0(uv0), uv1(uv1), uv2(uv2), color(color) {
         ComputeNormal();
     }
+    Triangle(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec2 uv0, glm::vec2 uv1, glm::vec2 uv2,
+             std::string texturePath)
+        : v0(v0), v1(v1), v2(v2), uv0(uv0), uv1(uv1), uv2(uv2), texturePath(texturePath) {
+        ComputeNormal();
+    }
+
     // Triangle(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 color)
     //     : v0(v0), v1(v1), v2(v2), color(color) {
     //     ComputeNormal();
@@ -44,6 +52,17 @@ void AddSquare(glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 D, glm::vec3 col
 
     triangles.emplace_back(A, B, C, uvA, uvB, uvC, color);
     triangles.emplace_back(B, D, C, uvB, uvD, uvC, color);
+};
+
+void AddSquare(glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 D, std::string texturePath,
+               std::vector<Triangle> &triangles) {
+    glm::vec2 uvB(0, 1);
+    glm::vec2 uvA(1, 1);
+    glm::vec2 uvD(0, 0);
+    glm::vec2 uvC(1, 0);
+
+    triangles.emplace_back(A, B, C, uvA, uvB, uvC, texturePath);
+    triangles.emplace_back(B, D, C, uvB, uvD, uvC, texturePath);
 };
 
 // Loads the Cornell Box. It is scaled to fill the volume:
@@ -80,19 +99,19 @@ void LoadTestModel(std::vector<Triangle> &triangles) {
     vec3 H(0, L, L);
 
     // Floor
-    AddSquare(C, D, A, B, green, triangles);
+    AddSquare(C, D, A, B, "textures/checkerboard.png", triangles);
 
     // Ceiling
-    AddSquare(E, F, G, H, cyan, triangles);
+    AddSquare(E, F, G, H, "textures/checkerboard.png", triangles);
 
     // Back wall
-    AddSquare(D, C, H, G, white, triangles);
+    AddSquare(D, C, H, G, "textures/checkerboard.png", triangles);
 
     // Left wall
-    AddSquare(B, D, F, H, purple, triangles);
+    AddSquare(B, D, F, H, "textures/checkerboard.png", triangles);
 
     // Right wall
-    AddSquare(C, A, G, E, yellow, triangles);
+    AddSquare(C, A, G, E, "textures/checkerboard.png", triangles);
 
     // ---------------------------------------------------------------------------
     // Short block
@@ -108,19 +127,19 @@ void LoadTestModel(std::vector<Triangle> &triangles) {
     H = vec3(82, 165, 225);
 
     // Front
-    AddSquare(A, B, E, F, red, triangles);
+    AddSquare(A, B, E, F, "textures/grass_block_side.png", triangles);
 
     // Front
-    AddSquare(B, D, F, H, red, triangles);
+    AddSquare(B, D, F, H, "textures/grass_block_side.png", triangles);
 
     // BACK
-    AddSquare(D, C, H, G, red, triangles);
+    AddSquare(D, C, H, G, "textures/grass_block_side.png", triangles);
 
     // LEFT
-    AddSquare(C, A, G, E, red, triangles);
+    AddSquare(C, A, G, E, "textures/grass_block_side.png", triangles);
 
     // TOP
-    AddSquare(F, E, H, G, red, triangles);
+    AddSquare(F, E, H, G, "textures/grass_block_top.png", triangles);
 
     // ----------------------------------------------
     // Scale to the volume [-1,1]^3

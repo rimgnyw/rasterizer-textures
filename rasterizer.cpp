@@ -59,8 +59,8 @@ vec3 indirectLightPowerPerArea = 0.5f * vec3(1, 1, 1);
 vec3 currentNormal;
 vec3 currentReflectance;
 
+vector<Texture> textures;
 Texture currentTexture;
-// mat3 mappingCoefficents(1.f);
 
 // ----------------------------------------------------------------------------
 // FUNCTIONS
@@ -86,11 +86,15 @@ int GetImageBufferIndex(int x, int y, int width);
 vec3 GetImageColor(const Texture &texture, int index);
 int GetImageBufferIndexFromUV(float u, float v, int width, int height);
 
+void LoadTextures(vector<Triangle> triangles, vector<Texture> &textures);
+void FreeTextures(vector<Texture> textures);
+
 int main(int argc, char *argv[]) {
 
-    LoadImage("checkerboard.png", currentTexture);
+    // LoadImage("checkerboard.png", currentTexture);
 
     LoadTestModel(triangles); // Load model
+    LoadTextures(triangles, textures);
 
     sdlAux = new SDL2Aux(SCREEN_WIDTH, SCREEN_HEIGHT);
     t = SDL_GetTicks(); // Set start value for timer.
@@ -99,7 +103,7 @@ int main(int argc, char *argv[]) {
         Update();
         Draw();
     }
-    FreeImage(currentTexture.data);
+    // FreeImage(currentTexture.data);
     sdlAux->saveBMP("screenshot.bmp");
     return 0;
 }
@@ -153,6 +157,8 @@ void Draw() {
 
     for (size_t i = 0; i < triangles.size(); ++i) {
         vector<Vertex> vertices(3);
+
+        currentTexture = textures[i];
 
         currentColor = triangles[i].color;
         vertices[0].position = triangles[i].v0;
@@ -327,6 +333,22 @@ void LoadImage(const char *filename, Texture &texture) {
     if (texture.data == NULL) {
         cerr << "Error loading texture file " << filename << endl;
         exit(1);
+    }
+}
+
+void LoadTextures(vector<Triangle> triangles, vector<Texture> &textures) {
+    for (Triangle triangle : triangles) {
+        if (triangle.texturePath != "") {
+            Texture texture;
+            LoadImage(triangle.texturePath.c_str(), texture);
+            textures.push_back(texture);
+        }
+    }
+}
+
+void FreeTextures(vector<Texture> textures) {
+    for (Texture texture : textures) {
+        FreeImage(texture.data);
     }
 }
 
