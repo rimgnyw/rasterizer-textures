@@ -43,17 +43,6 @@ class Triangle {
     }
 };
 // Helper for adding a square (two triangles) to the model
-void AddSquare(glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 D, glm::vec3 color,
-               std::vector<Triangle> &triangles) {
-    glm::vec2 uvB(0, 1);
-    glm::vec2 uvA(1, 1);
-    glm::vec2 uvD(0, 0);
-    glm::vec2 uvC(1, 0);
-
-    triangles.emplace_back(A, B, C, uvA, uvB, uvC, color);
-    triangles.emplace_back(B, D, C, uvB, uvD, uvC, color);
-};
-
 void AddSquare(glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 D, std::string texturePath,
                std::vector<Triangle> &triangles) {
     glm::vec2 uvB(0, 1);
