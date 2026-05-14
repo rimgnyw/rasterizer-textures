@@ -72,3 +72,10 @@ code {
   background: #f2f2f2;
   padding: 2px 4px;
 }
+
+#intro li {
+  list-style: none;
+}
+#intro li p {
+  margin: 0;
+}
