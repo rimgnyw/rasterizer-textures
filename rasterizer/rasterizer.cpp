@@ -82,7 +82,6 @@ void VertexShader(const Vertex &v, Pixel &p);
 
 void LoadImage(const char *filename, Texture &texture);
 void FreeImage(unsigned char *data);
-int GetImageBufferIndex(int x, int y, int width);
 vec3 GetImageColor(const Texture &texture, int index);
 int GetImageBufferIndexFromUV(float u, float v, int width, int height);
 
@@ -90,8 +89,6 @@ void LoadTextures(vector<Triangle> triangles, vector<Texture> &textures);
 void FreeTextures(vector<Texture> textures);
 
 int main(int argc, char *argv[]) {
-
-    // LoadImage("checkerboard.png", currentTexture);
 
     LoadTestModel(triangles); // Load model
     LoadTextures(triangles, textures);
@@ -103,7 +100,6 @@ int main(int argc, char *argv[]) {
         Update();
         Draw();
     }
-    // FreeImage(currentTexture.data);
     sdlAux->saveBMP("screenshot.bmp");
     return 0;
 }
@@ -187,7 +183,7 @@ void VertexShader(const Vertex &v, Pixel &p) {
     p.zinv = 1 / rotatedPosition.z;
 
     p.pos3d = v.position * p.zinv;
-    p.uv = v.uv * p.zinv;
+    p.uv = v.uv * p.zinv; // scale (u,v) by zinv to be linear in screen space
 }
 
 void Interpolate(Pixel a, Pixel b, vector<Pixel> &result) {
@@ -354,13 +350,11 @@ void FreeTextures(vector<Texture> textures) {
 
 void FreeImage(unsigned char *data) { stbi_image_free(data); }
 
-int GetImageBufferIndex(int x, int y, int width) { return (y * width + x) * 3; }
-
 int GetImageBufferIndexFromUV(float u, float v, int width, int height) {
     int x = u * (width - 1);
     int y = v * (height - 1);
 
-    return (y * width + x) * 3;
+    return (y * width + x) * 3; // 3 bytes per pixel (RGB)
 }
 
 vec3 GetImageColor(const Texture &texture, int index) {
