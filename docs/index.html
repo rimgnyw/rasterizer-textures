@@ -66,7 +66,7 @@
           And it doesn't look bad sure, but it's a bit boring. There are plenty
           of areas of improvement that could make this more interesting. But the
           one I'll be implementing in this project is mapping images to the
-          different surfaces in the render, a so-called texture mapping.
+          different surfaces in the scene, a so-called texture mapping.
         </p>
       </section>
 
@@ -74,9 +74,9 @@
         <h2>02 - Loading Images</h2>
 
         <p>
-          Decoding a png file is not something I felt like making a part of this
+          Reading a png file into memory felt a bit outside the scope of this
           project so I'm using the stb_image library by Sean Barrett (2014).
-          Loading the test image we can get the following output:
+          Loading a test image we can get the following output:
         </p>
 
         <img src="images/image_load.png" />
@@ -89,15 +89,15 @@
 
         <p>
           We can load and print images so it's time to map those images to
-          geometry in the render.
+          geometry in the scene.
         </p>
 
         <p>
           The way I'm doing this is by defining a set of coordinates (u,v) in
           the texture image and to avoid having to change that mapping for every
-          image u and v are normalized so the same coordinates will work for any
-          image resolution. Below is an example of how a texture could be mapped
-          to a square consisting of two triangles:
+          image, u and v are normalized so the same coordinates will work for
+          any image resolution. Below is an example of how a texture could be
+          mapped to a square consisting of two triangles:
         </p>
 
         <img src="images/mapping-example.png" />
@@ -107,7 +107,7 @@
           Heckbert (1998) describes some methods for mapping texture to
           geometry, in particular he describes an incremental method which is
           convenient for me because the rasterizer already renders triangles
-          incrementally so all I need to do is add some interpolation for (u,v).
+          incrementally so all I need to do is add interpolation for (u,v).
           Below is the result from doing that:
         </p>
 
@@ -118,10 +118,9 @@
           linearly but (u,v) isn't linear in screen space. Fortunately, I
           already solved a similar problem in the underlying lab work, each
           pixel needed to store its 3D position to get the lighting working
-          properly but the 3D position is obviously not linear in the 2D screen
-          space so we had to multiply it with a factor that is linear in screen
-          space, namely 1/z. Doing the same for (u,v) we get the following
-          image:
+          properly but the 3D position is not linear in the 2D screen space so
+          we had to multiply it with a factor that is linear in screen space,
+          namely 1/z. Doing the same for (u,v) we get the following image:
         </p>
 
         <img src="images/perspective-correct.png" />
@@ -133,8 +132,8 @@
         <h2>04 - Extra Geometry and Bug Fixes</h2>
 
         <p>
-          The texture mapping is done but just for fun let's see add a box to
-          see what that looks like:
+          The texture mapping is done but just for fun let's add a box to see
+          what that looks like:
         </p>
 
         <img src="images/cube.png" />
@@ -143,13 +142,14 @@
           Pretty cool. Though the perceptive reader will notice that lighting
           looks different from the other entries, this is because the way the
           normal for the surfaces gets computed is dependent on the order of
-          which the vertices are defined. Since I discovered this fairly late in
-          the project the solution is simply manually changing the order of the
-          vertices to make the calculation work.
+          which the vertices are defined. I solved this by simply changing what
+          order the vertices were defined for the squares, but in the future it
+          would probably be better to somehow compute the normal independently
+          of the vertex order.
         </p>
 
         <p>
-          Another thing we can try is to add different textures to the different
+          Another thing we can try is to add different textures to different
           surfaces, for example:
         </p>
 
