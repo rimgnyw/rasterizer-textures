@@ -1,100 +1,3 @@
-<!-- <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
-
-    <title>DH2323-Texture-Mapping</title>
-  </head>
-  <body>
-    <main>
-      <h1>DH2323-Texture-Mapping</h1>
-      <h2>Introduction</h2>
-      <p>
-        This blog will describe the implementation of my project for the course
-        DH2323 at KTH Royal Institute of Technology.
-      </p>
-      <h2>01 - In the Beginning</h2>
-      <p>
-        From the rendering track in the course lab work I already have a simple
-        rasterizer. Though it's only capable of rendering surfaces as a uniform
-        colour, see the image below for an example.
-      </p>
-      <img src="images/base.png" alt="Base Rasterizer" />
-      <p>
-        And it doesn't look bad sure, but it's a bit boring. There are plenty of
-        areas of improvement that could make this more interesting. But the one
-        I'll be implementing in this project is mapping images to the different
-        surfaces in the render, a so-called texture mapping.
-      </p>
-
-      <h2>02 - Loading Images</h2>
-      <p>
-        Decoding a png file is not something I felt like making a part of this
-        project so I'm using the stb_image library by Sean Barrett. Loading the
-        test image we can get the following output:
-      </p>
-      <img src="images/image_load.png" />
-      <p>Looks like it works.</p>
-
-      Much better.
-      <p>
-        We can load and print images so it's time to map those images to
-        geometry in the render.
-      </p>
-      <p>
-        The way I'm doing this is by defining a set of coordinates (u,v) in the
-        texture image and to avoid having to change that mapping for every image
-        u and v are normalized so the same coordinates will work for any image
-        resolution. Below is an example of how a texture could be mapped to a
-        square consisting of two triangles:
-      </p>
-      <img src="images/mapping-example.png" />
-      <p>
-        The points in-between the vertices also need (u,v) coordinates. Paul
-        Heckbert (1998) describes some methods for mapping texture to geometry,
-        in particular he describes an incremental method which is convenient for
-        me because the rasterizer already renders triangles incrementally so all
-        I need to do is add some interpolation for (u,v). Below is the result
-        from doing that:
-      </p>
-      <img src="images/linear-interpolation.png" />
-      <p>
-        Doesn't look quite right… The issue here is that I interpolated (u,v)
-        linearly but (u,v) isn't linear in screen space. Fortunately, I already
-        solved a similar problem in the underlying lab work, each pixel needed
-        to store its 3D position to get the lighting working properly but the 3D
-        position is obviously not linear in the 2D screen space so we had to
-        multiply it with a factor that is linear in screen space, namely 1/z.
-        Doing the same for (u,v) we get the following image:
-      </p>
-      <img src="images/perspective-correct.png" />
-      <p>Much better.</p>
-
-      <h2>04 - Extra Geometry</h2>
-      <p>
-        The texture mapping is done but just for fun let's see add a box to see
-        what that looks like:
-      </p>
-      <img src="images/cube.png" />
-      <p>
-        Pretty cool. And since textures are rendered per surface, we can also
-        add different textures:
-      </p>
-      <img src="images/grass_block.png" />
-      <p>
-        Minecraft grass block texture from the Good Vibes texture pack by
-        Acaitart.
-      </p>
-      <p>
-        Now I would say the rasterizer is working pretty well with the texture
-        mapping and I don't have the patience to se up a more interesting scene
-        so this will be the last entry.
-      </p>
-    </main>
-  </body>
-</html> -->
-
 <!doctype html>
 <html lang="en">
   <head>
@@ -116,6 +19,10 @@
           This blog will describe the implementation of my, Markus Wingmyr
           (wingmyr@kth.se), project for the course DH2323 Computer Graphics and
           Interaction at KTH Royal Institute of Technology.
+        </p>
+        <p>
+          For the formal project specification, click
+          <a href="dgi_project_spec.pdf">here</a>.
         </p>
       </section>
 
